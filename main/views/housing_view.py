@@ -13,16 +13,36 @@ class HousingAPIView(APIView):
     def post(self, request):
         serializer = HousingSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        serializer.save()
 
-        housing_new = Housing.objects.create(
-            name=request.data['name'],
-            short_name=request.data['short_name'],
-            address=request.data['address'],
-            number_of_seats=request.data['number_of_seats'],
-            description=request.data['description'],
-            country_id=request.data['country_id'],
-            rating=request.data['rating'],
-        )
+        return Response({'housing': serializer.data})
 
-        return Response({'housing': HousingSerializer(housing_new).data})
+    def put(self, request, *args, **kwargs):
+        pk = kwargs.get("pk", None)
+        if not pk:
+            return Response({"error": "Метод PUT не определен"})
+
+        try:
+            instance = Housing.objects.get(pk=pk)
+        except:
+            return Response({"error": "Объект не найден"})
+
+        serializer = HousingSerializer(data=request.data, instance=instance)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response({'housing': serializer.data})
+
+    def delete(self, request, *args, **kwargs):
+        pk = kwargs.get("pk", None)
+        if not pk:
+            return Response({"error": "Метод DELETE не определен"})
+
+        try:
+            instance = Housing.objects.get(id=pk)
+            instance.delete()
+        except:
+            return Response({"error": "Объект не найден"})
+
+        return Response({"message": f"Объект {instance} успешно удален"})
 

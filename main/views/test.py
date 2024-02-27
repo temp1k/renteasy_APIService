@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import generics
 from django.http import JsonResponse
+from rest_framework.views import APIView
 
 from main.serializers import UserSerializer
 
@@ -12,6 +13,6 @@ def index(request):
     return JsonResponse({"message": "test"})
 
 
-class TestAPIView(generics.ListAPIView):
+class TestAPIView(APIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
