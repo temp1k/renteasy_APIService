@@ -7,3 +7,13 @@ from main.serializers import CountrySerializer
 class CountryAPIList(generics.ListCreateAPIView):
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
+
+
+class CountryAPIUpdate(generics.UpdateAPIView):
+    queryset = Country.objects.all()
+    serializer_class = CountrySerializer
+
+
+class CountryAPIDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Country.objects.all()
+    serializer_class = CountrySerializer
