@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
@@ -52,6 +53,7 @@ class Housing(models.Model):
             MaxValueValidator(5),
             MinValueValidator(0)
         ])
+    owner = models.ForeignKey(User, verbose_name='Владелец', on_delete=models.PROTECT)
 
     def __str__(self):
         return f'{self.name} ({self.country})'

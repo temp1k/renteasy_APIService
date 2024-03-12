@@ -33,38 +33,16 @@ class CountrySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class HousingSerializer(serializers.Serializer):
+class HousingSerializer(serializers.ModelSerializer):
     """
-    Сериалайзер для модели Housing на основе класса Serializer
+    Сериалайзер для модели Housing на основе класса ModelSerializer
     """
-    id = serializers.IntegerField(read_only=True)
-    name = serializers.CharField()
-    short_name = serializers.CharField(max_length=20, help_text='Сокращенное название до 20 символов', required=False)
-    address = serializers.CharField()
-    number_of_seats = serializers.IntegerField()
-    date_creation = serializers.DateTimeField(read_only=True)
-    date_update = serializers.DateTimeField(read_only=True)
-    description = serializers.CharField()
-    country_id = serializers.IntegerField()
-    rating = serializers.DecimalField(max_digits=2, decimal_places=1, default=0, validators=[
-        MaxValueValidator(5),
-        MinValueValidator(0)
-    ])
+    owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
-    def create(self, validate_data):
-        return Housing.objects.create(**validate_data)
+    class Meta:
+        model = Housing
+        fields = "__all__"
 
-    def update(self, instance, validated_data):
-        instance.name = validated_data.get("name", instance.name)
-        instance.short_name = validated_data.get("short_name", instance.short_name)
-        instance.date_update = datetime.datetime.now()
-        instance.address = validated_data.get("address", instance.address)
-        instance.number_of_seats = validated_data.get("number_of_seats", instance.number_of_seats)
-        instance.description = validated_data.get("description", instance.description)
-        instance.country_id = validated_data.get("country_id", instance.country_id)
-        instance.rating = validated_data.get("rating", instance.rating)
-        instance.save()
-        return instance
 
 # def encode():
 #     model = CategoryModel('Квартира')

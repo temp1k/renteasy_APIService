@@ -1,10 +1,11 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from main.models import Housing, Country
+from main.my_permissions import HousingPermission, IsAdminOrReadOnly, IsOwnerOrReadOnly
 from main.serializers import HousingSerializer
 from main.service import PaginationHousings
 
@@ -13,6 +14,7 @@ class HousingViewSet(viewsets.ModelViewSet):
     queryset = Housing.objects.all()
     serializer_class = HousingSerializer
     pagination_class = PaginationHousings
+    permission_classes = (IsAdminOrReadOnly, IsOwnerOrReadOnly)
 
     def get_queryset(self):
         """
@@ -31,19 +33,6 @@ class HousingViewSet(viewsets.ModelViewSet):
         if housing is None:
             return Response({'message': 'Запись не найдена', }, status=status.HTTP_404_NOT_FOUND)
         return Response({'country': housing.country.name})
-
-    @action(methods=['get'], detail=False)
-    def pagination(self, request):
-        paginator = PageNumberPagination
-        page = request.GET.get('page')
-        limit = request.GET.get('limit')
-
-        # if not page or not limit:
-        #     return Response({'message': 'Ошибка запроса.\nВведите параметры limit и page'})
-        queryset = Housing.objects.all()
-        result_page = paginator.paginate_queryset(queryset, request)
-        serializer = HousingSerializer(result_page, many=True)
-        return paginator.get_paginated_response(serializer.data)
 
 
 

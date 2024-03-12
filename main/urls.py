@@ -12,5 +12,8 @@ urlpatterns = [
     re_path('test.', test.index),
     re_path('^users', test.TestAPIView.as_view()),
 
+    # Подключение авторизации по сессиям
+    path('drf-auth', include('rest_framework.urls')),
+
     path('', include(router.urls))
 ]
