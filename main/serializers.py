@@ -32,6 +32,7 @@ class CountrySerializer(serializers.ModelSerializer):
         model = Country
         fields = "__all__"
 
+
 class HousingSerializer(serializers.Serializer):
     """
     Сериалайзер для модели Housing на основе класса Serializer

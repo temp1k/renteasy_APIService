@@ -126,5 +126,7 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERED_CLASSES': [
         'rest_frameworks.renderers.JSONRenderer',
         'rest_frameworks.renderers.BrowsableAPIRenderer',
-    ]
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 10
 }
