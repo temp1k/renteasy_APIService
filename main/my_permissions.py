@@ -20,7 +20,9 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
 
-        return bool(request.user and request.user.is_staff)
+        print(request.user)
+        if request.method in ('PUT', 'CREATE', 'POST', 'DELETE'):
+            return bool(request.user and request.user.is_staff)
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
@@ -36,4 +38,7 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
             return True
 
         # Instance must have an attribute named `owner`.
-        return obj.owner == request.user
+        if request.method == 'PUT':
+            return obj.owner == request.user
+
+        return False

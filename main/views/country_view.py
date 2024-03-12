@@ -4,11 +4,13 @@ from rest_framework.response import Response
 
 from main.models import Country
 from main.serializers import CountrySerializer
+from main.my_permissions import IsAdminOrReadOnly
 
 
 class CountryViewSet(viewsets.ModelViewSet):
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
+    permission_classes = (IsAdminOrReadOnly, )
 
     @action(methods=['get'], detail=False)
     def countries(self, request):

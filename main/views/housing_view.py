@@ -14,7 +14,7 @@ class HousingViewSet(viewsets.ModelViewSet):
     queryset = Housing.objects.all()
     serializer_class = HousingSerializer
     pagination_class = PaginationHousings
-    permission_classes = (IsAdminOrReadOnly, IsOwnerOrReadOnly)
+    # permission_classes = (IsAdminOrReadOnly, IsOwnerOrReadOnly)
 
     def get_queryset(self):
         """
@@ -26,6 +26,7 @@ class HousingViewSet(viewsets.ModelViewSet):
             return Housing.objects.all().order_by('pk')
 
         return Housing.objects.filter(pk=pk)
+
 
     @action(methods=['get'], detail=True)
     def country(self, request, pk=None):
