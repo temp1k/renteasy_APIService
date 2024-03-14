@@ -14,7 +14,7 @@ router.register(r'housings', housing_view.HousingViewSet)
 
 urlpatterns = [
     re_path('test.', test.index),
-    re_path('^users', test.TestAPIView.as_view()),
+    re_path('^users/', test.TestAPIView.as_view()),
 
     # Подключение авторизации по сессиям
     path('drf-auth/', include('rest_framework.urls')),
