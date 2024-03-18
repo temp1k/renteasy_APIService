@@ -13,6 +13,8 @@ from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+from mylogger.formatters import CustomJsonFormatter
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
@@ -36,11 +38,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'main.apps.MainConfig',
+    # 'logger.apps.LoggerConfig',
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'djoser',
-    'users'
+    'users',
+    # 'django_db_logger',
 ]
 
 MIDDLEWARE = [
@@ -138,6 +142,56 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     )
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+
+    # formatters - то как логи выводятся
+    'formatters': {
+        "main_format": {
+            "format": '%(asctime)s - %(levelname)s - %(name)s -  %(filename)s - %(funcName)s - %('
+                      'message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+            'ensure_ascii': False,
+        },
+        "json_formatter": {
+            '()': CustomJsonFormatter,
+        }
+    },
+
+    # handlers - то, что обрабатывает логи
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'main_format',
+        },
+        'django_file': {
+            'class': 'logging.FileHandler',
+            'formatter': 'json_formatter',
+            'filename': 'django_info.log',
+            'encoding': 'utf-8',
+        },
+        # 'db': {
+        #     'level': 'DEBUG',
+        #     'class': 'django_db_logger.db_log_handler.DatabaseLogHandler'
+        # }
+    },
+
+    # loggers - то, как сохраняются логи
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'django_file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        # 'db': {
+        #     'handlers': ['db'],
+        #     'level': 'WARN',
+        #     'propagate': True,
+        # }
+    },
 }
 
 SIMPLE_JWT = {
