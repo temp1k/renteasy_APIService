@@ -38,13 +38,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'main.apps.MainConfig',
-    # 'logger.apps.LoggerConfig',
+    'mylogger.apps.MyloggerConfig',
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'djoser',
     'users',
-    # 'django_db_logger',
+    'django_db_logger',
 ]
 
 MIDDLEWARE = [
@@ -154,7 +154,7 @@ LOGGING = {
             "format": '%(asctime)s - %(levelname)s - %(name)s -  %(filename)s - %(funcName)s - %('
                       'message)s',
             'datefmt': '%Y-%m-%d %H:%M:%S',
-            'ensure_ascii': False,
+
         },
         "json_formatter": {
             '()': CustomJsonFormatter,
@@ -173,10 +173,10 @@ LOGGING = {
             'filename': 'django_info.log',
             'encoding': 'utf-8',
         },
-        # 'db': {
-        #     'level': 'DEBUG',
-        #     'class': 'django_db_logger.db_log_handler.DatabaseLogHandler'
-        # }
+        "db_log": {
+            'level': 'WARNING',
+            'class': 'django_db_logger.db_log_handler.DatabaseLogHandler'
+        },
     },
 
     # loggers - то, как сохраняются логи
@@ -186,11 +186,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
-        # 'db': {
-        #     'handlers': ['db'],
-        #     'level': 'WARN',
-        #     'propagate': True,
-        # }
+        'db': {
+            'handlers': ['db_log'],
+            'level': 'WARN',
+            'propagate': True,
+        }
     },
 }
 

@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -7,6 +8,8 @@ from rest_framework import serializers
 from main.models import Category, Housing, Country, HousingImages, Image
 
 User = get_user_model()
+
+logger = logging.getLogger('django')
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -24,6 +27,15 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ('id', 'name')
+
+    def create(self, validated_data):
+        try:
+            instance = super().create(validated_data)
+            logger.info(f'Создание модели Category (name = {validated_data.get("name")})')
+            return instance
+        except Exception as ex:
+            logger.error(f'Ошибка добавления объекта Category: {ex}')
+
 
 
 class ImageSerializer(serializers.ModelSerializer):
