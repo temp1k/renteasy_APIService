@@ -1,16 +1,47 @@
 from rest_framework import permissions
 
 
-class HousingPermission(permissions.BasePermission):
+class HousingPermissions(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.user == obj.owner:
+            return True
+
+        if request.method in ('POST', 'CREATE'):
+            return True
+
+        if request.method in ('DELETE', 'GET'):
+            return bool(request.user and request.user.is_staff)
+
+        return False
+
+
+class PublishedHousingPermissions(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.user == obj.housing.owner:
+            return True
+
+        if request.method in ('POST', 'CREATE'):
+            return bool(request.user.is_authenticated)
+
+        if request.method == 'GET':
+            return True
+
+        if request.method in ('DELETE', 'PUT'):
+            return bool(request.user and request.user.is_staff)
+
+        return False
+
+
+class IsAuthenticatedPostIsAdminOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
-        if view.action == 'retrieve':
-            return request.user.has_perms('fix_list_perm')
-        if view.action == 'update' or view.action == 'partial_update':
-            return request.user.has_perms('fix_an_appointment')
-        if view.action == 'destroy':
-            return request.user.has_perms('fix_an_appointment')
-        if view.action == 'create':
-            return request.user.has_perms('fix_an_appointment')
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        if request.method in ('POST', 'CREATE'):
+            return bool(request.user.is_authenticated)
+
+        if request.method == 'DELETE':
+            return bool(request.user and request.user.is_staff)
 
         return False
 
@@ -20,9 +51,35 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
 
-        print(request.user)
         if request.method in ('PUT', 'CREATE', 'POST', 'DELETE'):
             return bool(request.user and request.user.is_staff)
+
+
+class IsAuthenticatedOrAdminOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in ('PUT', 'DELETE'):
+            return bool(request.user and request.user.is_staff)
+
+        if request.method in ('POST', 'CREATE'):
+            return bool(request.user.is_authenticated)
+
+        if request.method == 'GET':
+            return True
+
+        return False
+
+
+class IsOwner(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in ('POST', 'CREATE'):
+            return True
+
+        if hasattr(obj, 'owner'):
+            return obj.owner == request.user
+        elif hasattr(obj, 'user'):
+            return obj.user == request.user
+
+        return False
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):

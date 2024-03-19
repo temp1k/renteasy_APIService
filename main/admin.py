@@ -1,7 +1,8 @@
 from django.contrib import admin
 
 # Register your models here.
-from main.models import Category, Image, Country, Housing, HousingImages, Tag, TypeHousing, Chat, Message, Feedback, PublishedHousing
+from main.models import Category, Image, Country, Housing, HousingImages, Tag, TypeHousing, Chat, Message, Feedback, \
+    PublishedHousing, Currency
 
 admin.site.register(Category)
 
@@ -53,5 +54,10 @@ class ChatsAdmin(admin.ModelAdmin):
 
 @admin.register(PublishedHousing)
 class PublishedHousingsAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Currency)
+class CurrencyAdmin(admin.ModelAdmin):
     pass
 

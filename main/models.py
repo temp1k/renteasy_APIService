@@ -10,12 +10,6 @@ from rest_framework.exceptions import ValidationError
 User = get_user_model()
 
 
-class CustomUser(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    favorites = models.ManyToManyField('PublishedHousing', 'Товар', through='Favorite')
-    chats = models.ManyToManyField('PublishedHousing', 'Жилье', through='Chat')
-
-
 class Image(models.Model):
     image = models.ImageField('Изображение', null=False, blank=False, upload_to='images')
     date_creation = models.DateTimeField('Дата создания', auto_now_add=True)
@@ -52,6 +46,20 @@ class Country(models.Model):
         verbose_name_plural = 'Страны'
 
 
+class Currency(models.Model):
+    name = models.CharField('Название', unique=True)
+    code = models.CharField('Кодовое название', unique=True, max_length=4)
+    publish_name = models.CharField('Сокращенное название', max_length=5)
+    value = models.DecimalField('Значение', max_digits=12, decimal_places=5, null=True, blank=True)
+
+    def __str__(self):
+        return self.code
+
+    class Meta:
+        verbose_name = 'Валюта'
+        verbose_name_plural = 'Валюты'
+
+
 class Housing(models.Model):
     name = models.CharField('Название жилья', unique=True)
     short_name = models.CharField('Сокращенное название', null=True, blank=True)
@@ -69,6 +77,8 @@ class Housing(models.Model):
     categories = models.ManyToManyField('Category', verbose_name='Категории', related_name='housings')
     tags = models.ManyToManyField('Tag', verbose_name='Теги', related_name='housings', null=True, blank=True)
     types = models.ManyToManyField('TypeHousing', verbose_name='Типы жилья', related_name='housings')
+    images = models.ManyToManyField('Image', verbose_name='Изображения', through='HousingImages',
+                                    related_name='housing')
 
     def __str__(self):
         return f'{self.name} ({self.country})'
@@ -79,7 +89,7 @@ class Housing(models.Model):
 
 
 class HousingImages(models.Model):
-    housing = models.ForeignKey(Housing, verbose_name='Жилье', on_delete=models.CASCADE, related_name='images')
+    housing = models.ForeignKey(Housing, verbose_name='Жилье', on_delete=models.CASCADE)
     image = models.OneToOneField(Image, verbose_name='Изображение', on_delete=models.CASCADE, unique=True)
 
     def __str__(self):
@@ -117,8 +127,9 @@ class PublishedHousing(models.Model):
     date_publish = models.DateField('Дата публикации', auto_now_add=True)
     date_begin = models.DateTimeField('Дата начала')
     date_end = models.DateTimeField('Дата конца')
-    activity = models.BooleanField('Активность', default=True)
+    activity = models.BooleanField('Активность', default=True, db_default=True)
     price = models.DecimalField('Цена за одно место', max_digits=12, decimal_places=2)
+    currency = models.ForeignKey(Currency, verbose_name='Валюта', on_delete=models.PROTECT)
 
     def __str__(self):
         return self.housing.__str__()
@@ -159,13 +170,18 @@ class Feedback(models.Model):
 
 class Favorite(models.Model):
     product = models.ForeignKey(PublishedHousing, on_delete=models.CASCADE, verbose_name='Избранный товар')
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='Пользователь')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', related_name='Favorites')
     date_creation = models.DateTimeField('Дата добавления', auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['product', 'user'], name='unique_favorite')
+        ]
 
 
 class Chat(models.Model):
     housing = models.ForeignKey(PublishedHousing, on_delete=models.CASCADE, verbose_name='Жилье')
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='Пользователь')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', related_name='users')
 
     def __str__(self):
         return f'{self.user.username} c {self.housing.name}'
@@ -179,7 +195,7 @@ class Message(models.Model):
     text = models.TextField('Текст сообщения')
     date_push = models.DateTimeField('Дата отправки', auto_now_add=True)
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, verbose_name='Чат', related_name='messages')
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE,
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
                              related_name='messages', verbose_name='Пользователь')
 
     def __str__(self):
@@ -188,3 +204,29 @@ class Message(models.Model):
     class Meta:
         verbose_name = 'Сообщение'
         verbose_name_plural = 'Сообщения'
+
+
+class CartItem(models.Model):
+    product = models.ForeignKey(PublishedHousing, on_delete=models.CASCADE, verbose_name='Товар в корзине')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Владелец корзины', related_name='cart')
+    number_of_seats = models.PositiveIntegerField('Количество мест')
+    date_begin = models.DateTimeField('Дата начала')
+    date_end = models.DateTimeField('Дата конца')
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['product', 'user'], name='unique_cart_item')
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.product.housing.number_of_seats < self.number_of_seats:
+            raise ValidationError(
+                {'number_of_seats': f'Превышен лимит доступного места.'
+                                    f' Максимум {self.product.housing.number_of_seats} '
+                                    f'мест, а указано {self.number_of_seats}'})
+
+        if self.product.date_begin > self.date_begin or self.product.date_end < self.date_end:
+            raise ValidationError(
+                {'date_error': 'Неверно указаны даты'}
+            )

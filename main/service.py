@@ -3,7 +3,7 @@ from rest_framework.response import Response
 
 
 class PaginationHousings(PageNumberPagination):
-    page_size = 3
+    page_size = 10
     max_page_size = 100
 
     def get_paginated_response(self, data):

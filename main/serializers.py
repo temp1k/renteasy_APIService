@@ -5,7 +5,8 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
 
-from main.models import Category, Housing, Country, HousingImages, Image
+from main.models import Category, Housing, Country, HousingImages, Image, Tag, PublishedHousing, Currency, Feedback, \
+    Favorite, CartItem
 
 User = get_user_model()
 
@@ -15,8 +16,7 @@ logger = logging.getLogger('django')
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        # fields = ['last_login', 'username', 'email', 'is_active']
-        exclude = ('password', )
+        fields = ['username', 'email', 'is_active']
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -37,11 +37,10 @@ class CategorySerializer(serializers.ModelSerializer):
             logger.error(f'Ошибка добавления объекта Category: {ex}')
 
 
-
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
-        fields = "__all__"
+        fields = ('image', )
 
 
 class HousingImagesSerializer(serializers.ModelSerializer):
@@ -64,22 +63,85 @@ class HousingSerializer(serializers.ModelSerializer):
     """
     Сериалайзер для модели Housing на основе класса ModelSerializer
     """
-    class ImageSelfSerializer(serializers.ModelSerializer):
-        image = ImageSerializer(many=False, read_only=True)
 
+    class UserSelfSerializer(serializers.ModelSerializer):
         class Meta:
-            model = HousingImages
-            fields = ('image', )
+            model = User
+            fields = ['id', 'username']
 
     country = CountrySerializer(many=False, read_only=True)
-    images = ImageSelfSerializer(many=True, read_only=True)
+    country_id = serializers.IntegerField()
+    images = ImageSerializer(many=True, read_only=True)
     owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    owner_details = UserSelfSerializer(source='owner', read_only=True)
 
     class Meta:
         model = Housing
         fields = "__all__"
 
 
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = "__all__"
+
+
+class CurrencySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Currency
+        fields = ('publish_name', )
+
+
+class PublishedHousingSerializer(serializers.ModelSerializer):
+    housing_detail = HousingSerializer(many=False, read_only=True, source='housing')
+    currency_detail = CurrencySerializer(read_only=True, source='currency')
+
+    class Meta:
+        model = PublishedHousing
+        fields = "__all__"
+
+
+class FeedbackSerializer(serializers.ModelSerializer):
+    user_detail = UserSerializer(read_only=True, source='user')
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Feedback
+        fields = "__all__"
+
+class PublishHousingShortSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='housing.name')
+    short_name = serializers.CharField(source='housing.short_name')
+    number_of_seats = serializers.CharField(source='housing.number_of_seats')
+    address = serializers.CharField(source='housing.address')
+    currency_name = serializers.CharField(source='currency.publish_name')
+
+    class Meta:
+        model = PublishedHousing
+        fields = ('name', 'short_name', 'price', 'currency_name', 'number_of_seats', 'address')
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    product_detail = PublishHousingShortSerializer(read_only=True, source='product')
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Favorite
+        fields = "__all__"
+
+
+class CartSerializer(serializers.ModelSerializer):
+    product_detail = PublishHousingShortSerializer(read_only=True, source='product')
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = CartItem
+        fields = "__all__"
+
+    def validate(self, attrs):
+        cart_item = CartItem(**attrs)
+        cart_item.full_clean()
+        return attrs
 
 # def encode():
 #     model = CategoryModel('Квартира')

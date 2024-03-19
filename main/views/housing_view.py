@@ -1,12 +1,11 @@
-from rest_framework import viewsets, status, permissions
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from main.models import Housing, Country
-from main.my_permissions import HousingPermission, IsAdminOrReadOnly, IsOwnerOrReadOnly
-from main.serializers import HousingSerializer
+from main.models import Housing
+from main.my_permissions import HousingPermissions
+from main.serializers import HousingSerializer, ImageSerializer
 from main.service import PaginationHousings
 
 
@@ -14,7 +13,7 @@ class HousingViewSet(viewsets.ModelViewSet):
     queryset = Housing.objects.all()
     serializer_class = HousingSerializer
     pagination_class = PaginationHousings
-    # permission_classes = (IsAdminOrReadOnly, IsOwnerOrReadOnly)
+    permission_classes = (IsAuthenticated, HousingPermissions, )
 
     def get_queryset(self):
         """
@@ -27,7 +26,6 @@ class HousingViewSet(viewsets.ModelViewSet):
 
         return Housing.objects.filter(pk=pk)
 
-
     @action(methods=['get'], detail=True)
     def country(self, request, pk=None):
         housing = Housing.objects.get(pk=pk)  # исправить ошибку ненахождения записи
@@ -35,6 +33,24 @@ class HousingViewSet(viewsets.ModelViewSet):
             return Response({'message': 'Запись не найдена', }, status=status.HTTP_404_NOT_FOUND)
         return Response({'country': housing.country.name})
 
+    @action(methods=['get'], detail=False)
+    def my(self, request):
+        housings = Housing.objects.filter(owner=request.user)
+        if len(housings) == 0:
+            return Response({'message': 'У вас нет объектов', }, status=status.HTTP_404_NOT_FOUND)
+        return Response({'housings': HousingSerializer(housings, many=True).data})
+
+    @action (methods=['get'], detail=True)
+    def images(self, request, pk=None):
+        housing = Housing.objects.get(pk=pk)
+        if housing is None:
+            return Response({'message': 'Запись не найдена', }, status=status.HTTP_404_NOT_FOUND)
+
+        images = ImageSerializer(housing.images, many=True).data
+        if len(images) == 0:
+            return Response({'message': 'Нет изображений', }, status=status.HTTP_404_NOT_FOUND)
+
+        return Response({'images': images})
 
 
 # class HousingAPIView(APIView):
