@@ -1,12 +1,14 @@
 import logging
 
 from django.contrib.auth import get_user_model
+from rest_framework import permissions
 from rest_framework import generics
 from django.http import JsonResponse
 from rest_framework.permissions import IsAdminUser, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from main.my_permissions import IsOwnerOrAdmin
 from main.serializers import UserSerializer
 
 User = get_user_model()
@@ -18,13 +20,24 @@ def index(request):
     return JsonResponse({"message": "test"})
 
 
-class TestAPIView(APIView):
-    permission_classes = (IsAdminUser, )
+class AllUsersAPIView(APIView):
+    permission_classes = (IsOwnerOrAdmin, )
 
     def get(self, request):
         users = User.objects.all()
-        logger.warning(f'{request.user} делает запрос на получение все пользователей')
+        logger.warning(f'{request.user} делает запрос на получение всех пользователей')
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
+
+
+class SingleUserApiView(APIView):
+    permission_classes = (IsOwnerOrAdmin, )
+
+    def get(self, request, user_id):
+        user = User.objects.get(pk=user_id)
+        logger.warning(f'{request.user} делает запрос на получение пользователя с id {user_id}')
+        serializer = UserSerializer(user, many=False)
+        return Response(serializer.data)
+
 
 
