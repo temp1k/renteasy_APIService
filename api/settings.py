@@ -116,6 +116,12 @@ AUTH_PASSWORD_VALIDATORS = [
     # },
 ]
 
+# DJOSER = {
+#     'SERIALIZERS': {
+#         'user_create': 'users.serializers.CustomUserSerializer',
+#     },
+# }
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 

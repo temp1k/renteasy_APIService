@@ -16,7 +16,7 @@ logger = logging.getLogger('django')
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'is_active']
+        fields = ['username', 'email', 'is_active', 'groups']
 
 
 class CategorySerializer(serializers.ModelSerializer):

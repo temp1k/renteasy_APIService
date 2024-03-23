@@ -26,8 +26,8 @@ router.register(r'cart', cart_view.CartViewSet)
 
 urlpatterns = [
     re_path('test.', test.index),
-    path('users/', test.AllUsersAPIView.as_view()),
-    path('users/2', test.AllUsersAPIView.as_view()),
+    # path('users/', test.AllUsersAPIView.as_view()),
+    # path('users/<int:user_id>', test.SingleUserApiView.as_view()),
 
     # Подключение авторизации по сессиям
     path('drf-auth/', include('rest_framework.urls')),

@@ -4,7 +4,7 @@ from users.managers import CustomUserManager
 
 
 class CustomUser(AbstractUser):
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['email']
 
     objects = CustomUserManager()
 
