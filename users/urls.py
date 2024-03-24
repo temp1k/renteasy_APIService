@@ -7,5 +7,6 @@ router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
 
 urlpatterns = [
-    path('', include(router.urls))
+    path('', include(router.urls)),
+    # path('users/set_landlord', UserProViewSet.as_view({'post': 'set_landlord'}), name='add-landlord-to-user')
 ]
