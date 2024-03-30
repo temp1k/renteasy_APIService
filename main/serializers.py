@@ -6,7 +6,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
 
 from main.models import Category, Housing, Country, HousingImages, Image, Tag, PublishedHousing, Currency, Feedback, \
-    Favorite, CartItem
+    Favorite, CartItem, TypeHousing
 
 User = get_user_model()
 
@@ -59,6 +59,30 @@ class CountrySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = "__all__"
+
+
+class TypeHousingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TypeHousing
+        fields = "__all__"
+
+
+class ImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Image
+        fields = "__all__"
+
+
+class CurrencySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Currency
+        fields = ('publish_name', )
+
+
 class HousingSerializer(serializers.ModelSerializer):
     """
     Сериалайзер для модели Housing на основе класса ModelSerializer
@@ -69,27 +93,17 @@ class HousingSerializer(serializers.ModelSerializer):
             model = User
             fields = ['id', 'username']
 
-    country = CountrySerializer(many=False, read_only=True)
-    country_id = serializers.IntegerField()
-    images = ImageSerializer(many=True, read_only=True)
+    country_d = CountrySerializer(many=False, read_only=True, source='country')
+    images_d = ImageSerializer(many=True, read_only=True, source='images')
+    images = serializers.PrimaryKeyRelatedField(queryset=Image.objects.all(), many=True)
     owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    owner_details = UserSelfSerializer(source='owner', read_only=True)
+    owner_d = UserSelfSerializer(source='owner', read_only=True)
+    tags_d = TagSerializer(many=True, source='tags', read_only=True)
+    categories_d = CategorySerializer(many=True, source='categories', read_only=True)
 
     class Meta:
         model = Housing
         fields = "__all__"
-
-
-class TagSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Tag
-        fields = "__all__"
-
-
-class CurrencySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Currency
-        fields = ('publish_name', )
 
 
 class PublishedHousingSerializer(serializers.ModelSerializer):
@@ -108,6 +122,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feedback
         fields = "__all__"
+
 
 class PublishHousingShortSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='housing.name')

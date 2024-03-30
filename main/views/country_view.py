@@ -10,6 +10,7 @@ from main.my_permissions import IsAdminOrReadOnly
 class CountryViewSet(viewsets.ModelViewSet):
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
+    pagination_class = None
     permission_classes = (IsAdminOrReadOnly, )
 
     @action(methods=['get'], detail=False)

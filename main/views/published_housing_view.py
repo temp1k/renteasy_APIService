@@ -17,4 +17,4 @@ class PublishedHousingViewSet(viewsets.ModelViewSet):
         housings = PublishedHousing.objects.filter(housing__owner=request.user)
         if len(housings) == 0:
             return Response({'message': 'У вас нет объектов', }, status=status.HTTP_404_NOT_FOUND)
-        return Response({'housings': PublishedHousingSerializer(housings, many=True).data})
+        return Response({'housings': self.get_serializer(housings, many=True).data})

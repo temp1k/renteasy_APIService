@@ -11,7 +11,8 @@ from main.views import (
     auth_view, tag_view,
     published_housing_view,
     feedback_view, favorite_view,
-    cart_view
+    cart_view, images_view,
+    type_view,
 )
 
 router = routers.DefaultRouter()
@@ -23,6 +24,8 @@ router.register(r'published_housings', published_housing_view.PublishedHousingVi
 router.register(r'feedbacks', feedback_view.FeedbackViewSet)
 router.register(r'favorites', favorite_view.FavoriteViewSet)
 router.register(r'cart', cart_view.CartViewSet)
+router.register(r'images', images_view.ImagesViewSet)
+router.register(r'types', type_view.TypeViewSet)
 
 urlpatterns = [
     re_path('test.', test.index),

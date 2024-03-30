@@ -51,7 +51,7 @@ class IsAuthenticatedPostIsAdminOrReadOnly(permissions.BasePermission):
         if request.method in ('POST', 'CREATE'):
             return bool(request.user.is_authenticated)
 
-        if request.method == 'DELETE':
+        if request.method in ('DELETE', 'PUT'):
             return bool(request.user and request.user.is_staff)
 
         return False

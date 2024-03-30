@@ -38,9 +38,9 @@ class HousingViewSet(viewsets.ModelViewSet):
         housings = Housing.objects.filter(owner=request.user)
         if len(housings) == 0:
             return Response({'message': 'У вас нет объектов', }, status=status.HTTP_404_NOT_FOUND)
-        return Response({'housings': HousingSerializer(housings, many=True).data})
+        return Response({'housings': self.get_serializer(housings, many=True).data})
 
-    @action (methods=['get'], detail=True)
+    @action(methods=['get'], detail=True)
     def images(self, request, pk=None):
         housing = Housing.objects.get(pk=pk)
         if housing is None:

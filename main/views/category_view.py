@@ -9,6 +9,13 @@ class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        name = self.request.query_params.get('name', None)
+        if name is not None:
+            queryset = queryset.filter(name__icontains=name)
+        return queryset
+
 
 # class CategoryAPIList(generics.ListCreateAPIView):
 #     queryset = Category.objects.all()

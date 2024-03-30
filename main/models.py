@@ -65,8 +65,8 @@ class Housing(models.Model):
     short_name = models.CharField('Сокращенное название', null=True, blank=True)
     date_creation = models.DateTimeField('Дата создания', auto_now_add=True)
     date_update = models.DateTimeField('Дата обновления', auto_now=True)
-    address = models.CharField('Адрес', blank=True, null=True)
-    number_of_seats = models.PositiveIntegerField('Количество мест')
+    address = models.CharField('Адрес')
+    number_of_seats = models.PositiveIntegerField('Количество мест', default=1)
     description = models.TextField('Описание', null=True)
     country = models.ForeignKey(Country, on_delete=models.PROTECT, verbose_name='Страна', related_name='housings')
     rating = models.DecimalField(max_digits=2, decimal_places=1, default=0, validators=[
@@ -78,7 +78,7 @@ class Housing(models.Model):
     tags = models.ManyToManyField('Tag', verbose_name='Теги', related_name='housings', null=True, blank=True)
     types = models.ManyToManyField('TypeHousing', verbose_name='Типы жилья', related_name='housings')
     images = models.ManyToManyField('Image', verbose_name='Изображения', through='HousingImages',
-                                    related_name='housing')
+                                    related_name='housing', null=False, blank=False)
 
     def __str__(self):
         return f'{self.name} ({self.country})'
