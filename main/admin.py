@@ -61,3 +61,5 @@ class PublishedHousingsAdmin(admin.ModelAdmin):
 class CurrencyAdmin(admin.ModelAdmin):
     pass
 
+
+

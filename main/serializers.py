@@ -16,7 +16,7 @@ logger = logging.getLogger('django')
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'is_active', 'groups']
+        fields = ['id', 'username', 'email', 'is_active', 'groups']
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -100,6 +100,7 @@ class HousingSerializer(serializers.ModelSerializer):
     owner_d = UserSelfSerializer(source='owner', read_only=True)
     tags_d = TagSerializer(many=True, source='tags', read_only=True)
     categories_d = CategorySerializer(many=True, source='categories', read_only=True)
+    types_d = TypeHousingSerializer(many=True, source='types', read_only=True)
 
     class Meta:
         model = Housing
@@ -107,8 +108,8 @@ class HousingSerializer(serializers.ModelSerializer):
 
 
 class PublishedHousingSerializer(serializers.ModelSerializer):
-    housing_detail = HousingSerializer(many=False, read_only=True, source='housing')
-    currency_detail = CurrencySerializer(read_only=True, source='currency')
+    housing_d = HousingSerializer(many=False, read_only=True, source='housing')
+    currency_d = CurrencySerializer(read_only=True, source='currency')
 
     class Meta:
         model = PublishedHousing

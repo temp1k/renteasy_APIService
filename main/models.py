@@ -5,6 +5,7 @@ import pytz
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import Avg
 from rest_framework.exceptions import ValidationError
 
 User = get_user_model()
@@ -154,7 +155,7 @@ class Feedback(models.Model):
         MaxValueValidator(5),
         MinValueValidator(0)
     ])
-    description = models.TextField('Отзыв', null=True)
+    description = models.TextField('Отзыв', null=True, blank=True)
     date_push = models.DateTimeField('Дата публикации', auto_now_add=True)
     product = models.ForeignKey(PublishedHousing, verbose_name='Товар',
                                 related_name='feedbacks', on_delete=models.CASCADE)
@@ -163,9 +164,28 @@ class Feedback(models.Model):
     def __str__(self):
         return f'Отзыв {self.user.username} от {self.date_push}'
 
+    def clean(self):
+        # Проверяем уникальность сочетания product и user
+        if Feedback.objects.filter(product=self.product, user=self.user).exists():
+            raise ValidationError('Данный пользователь уже писал отзыв к данному продукту')
+
+    def save(self, *args, **kwargs):
+        super(Feedback, self).save(*args, **kwargs)
+
+        # После сохранения отзыва, пересчитываем средний рейтинг жилья
+        average_rating = Feedback.objects.filter(product=self.product).aggregate(Avg('estimation'))['estimation__avg']
+
+        print(average_rating)
+
+        if average_rating is not None:
+            self.product.housing.rating = round(average_rating, 1)
+            self.product.housing.save()
+
     class Meta:
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
+        unique_together = ('product', 'user')
+        ordering = ['-date_push']
 
 
 class Favorite(models.Model):

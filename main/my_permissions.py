@@ -1,5 +1,7 @@
 from rest_framework import permissions
 
+from main.models import PublishedHousing
+
 
 class HousingPermissions(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
@@ -55,6 +57,17 @@ class IsAuthenticatedPostIsAdminOrReadOnly(permissions.BasePermission):
             return bool(request.user and request.user.is_staff)
 
         return False
+
+
+class PostIsNotOwnerProduct(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in ('POST', 'CREATE'):
+            publishHousing = PublishedHousing.objects.get(obj.product)
+            housing = publishHousing.housing
+
+            print(housing.owner)
+
+            return housing.owner != request.user
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
