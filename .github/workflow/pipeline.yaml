@@ -25,5 +25,5 @@ jobs:
         pycodestyle .
 
     - name: Run Flake8
-        run: |
-          flake8
+      run: |
+        flake8
