@@ -22,7 +22,7 @@ jobs:
     - name: RunFlake8
       run: |
         pip install flake8
-        flake8 main/serializers.py
+        flake8 main/
 
     - name: CheckStyle
       run: |
