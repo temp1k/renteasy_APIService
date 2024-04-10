@@ -24,6 +24,6 @@ jobs:
         flake8
 
     - name: CheckStyle
-        run: |
-          pip install pycodestyle
-          pycodestyle .
+      run: |
+        pip install pycodestyle
+        pycodestyle .
