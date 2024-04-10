@@ -1,10 +1,7 @@
 import logging
 
 from django.contrib.auth import get_user_model
-from rest_framework import permissions
-from rest_framework import generics
 from django.http import JsonResponse
-from rest_framework.permissions import IsAdminUser, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
