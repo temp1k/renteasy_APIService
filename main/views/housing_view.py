@@ -12,7 +12,6 @@ from main.service import PaginationHousings
 class HousingViewSet(viewsets.ModelViewSet):
     queryset = Housing.objects.all()
     serializer_class = HousingSerializer
-    pagination_class = PaginationHousings
     permission_classes = (IsAuthenticated, HousingPermissions, )
 
     def get_queryset(self):
@@ -29,16 +28,26 @@ class HousingViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=True)
     def country(self, request, pk=None):
         housing = Housing.objects.get(pk=pk)  # исправить ошибку ненахождения записи
+
         if housing is None:
             return Response({'message': 'Запись не найдена', }, status=status.HTTP_404_NOT_FOUND)
+
         return Response({'country': housing.country.name})
 
     @action(methods=['get'], detail=False)
     def my(self, request):
-        housings = Housing.objects.filter(owner=request.user)
-        if len(housings) == 0:
+        queryset = self.filter_queryset(self.get_queryset().filter(owner=request.user))
+        if len(queryset) == 0:
             return Response({'message': 'У вас нет объектов', }, status=status.HTTP_404_NOT_FOUND)
-        return Response({'housings': self.get_serializer(housings, many=True).data})
+
+        page = self.paginate_queryset(queryset=queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     @action(methods=['get'], detail=True)
     def images(self, request, pk=None):

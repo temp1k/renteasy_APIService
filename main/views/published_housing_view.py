@@ -46,6 +46,15 @@ class PublishedHousingViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         # housings = PublishedHousing.objects.filter(housing__owner=request.user)
         queryset = queryset.filter(housing__owner=request.user)
+
         if len(queryset) == 0:
             return Response({'message': 'У вас нет объектов', }, status=status.HTTP_404_NOT_FOUND)
-        return Response({'housings': self.get_serializer(queryset, many=True).data})
+
+        page = self.paginate_queryset(queryset=queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
