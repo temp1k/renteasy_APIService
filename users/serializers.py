@@ -2,6 +2,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from rest_framework import serializers
 
+from main.models import MessagesRequest
+
 User = get_user_model()
 
 
@@ -23,17 +25,15 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    groups_str = serializers.CharField(write_only=True)
     groups = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'password', 'groups', 'groups_str', 'is_active']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'password', 'groups', 'is_active', 'date_joined', 'is_success']
         extra_kwargs = {
             'password': {'write_only': True},
             'groups': {'read_only': True}
         }
-
 
     def get_groups(self, obj):
         return [group.name for group in obj.groups.all()]

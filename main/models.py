@@ -35,16 +35,27 @@ class Category(models.Model):
         verbose_name_plural = 'Категории'
 
 
-class Country(models.Model):
-    name = models.CharField('Страна', unique=True, max_length=100)
-    code_name = models.CharField('Кодовое название', max_length=5, null=True, blank=True)
+class District(models.Model):
+    name = models.CharField('Округ', unique=True, max_length=100)
+    code_name = models.CharField('Кодовое название', unique=True, max_length=100)
+
+    def __str__(self):
+        return f'{self.name} округ'
+
+    class Meta:
+        verbose_name = 'Округ'
+        verbose_name_plural = 'Округа'
+
+
+class City(models.Model):
+    name = models.CharField('Город', unique=True, max_length=100)
 
     def __str__(self):
         return self.name
 
     class Meta:
-        verbose_name = 'Страна'
-        verbose_name_plural = 'Страны'
+        verbose_name = 'Город'
+        verbose_name_plural = 'Города'
 
 
 class Currency(models.Model):
@@ -66,10 +77,11 @@ class Housing(models.Model):
     short_name = models.CharField('Сокращенное название', null=True, blank=True)
     date_creation = models.DateTimeField('Дата создания', auto_now_add=True)
     date_update = models.DateTimeField('Дата обновления', auto_now=True)
+    city = models.ForeignKey(City, on_delete=models.PROTECT, verbose_name='Город', related_name='housings')
     address = models.CharField('Адрес')
     number_of_seats = models.PositiveIntegerField('Количество мест', default=1)
     description = models.TextField('Описание', null=True)
-    country = models.ForeignKey(Country, on_delete=models.PROTECT, verbose_name='Страна', related_name='housings')
+    district = models.ForeignKey(District, on_delete=models.PROTECT, verbose_name='Округ', related_name='housings')
     rating = models.DecimalField(max_digits=2, decimal_places=1, default=0, validators=[
         MaxValueValidator(5),
         MinValueValidator(0)
@@ -77,12 +89,12 @@ class Housing(models.Model):
     owner = models.ForeignKey(User, verbose_name='Владелец', on_delete=models.PROTECT)
     categories = models.ManyToManyField('Category', verbose_name='Категории', related_name='housings')
     tags = models.ManyToManyField('Tag', verbose_name='Теги', related_name='housings', null=True, blank=True)
-    types = models.ManyToManyField('TypeHousing', verbose_name='Типы жилья', related_name='housings')
+    metro = models.ForeignKey('Metro', verbose_name='Метро', on_delete=models.PROTECT, null=True, blank=True)
     images = models.ManyToManyField('Image', verbose_name='Изображения', through='HousingImages',
                                     related_name='housing', null=False, blank=False)
 
     def __str__(self):
-        return f'{self.name} ({self.country})'
+        return f'{self.name} ({self.district})'
 
     class Meta:
         verbose_name = 'Жилье'
@@ -112,15 +124,27 @@ class Tag(models.Model):
         verbose_name_plural = 'Теги'
 
 
-class TypeHousing(models.Model):
-    name = models.CharField('Тип жилья', unique=True)
+class Metro(models.Model):
+    name = models.CharField('Метро', unique=True)
+    city = models.ForeignKey(City, verbose_name='Город', on_delete=models.PROTECT)
 
     def __str__(self):
         return f'{self.name}'
 
     class Meta:
-        verbose_name = 'Тип жилья'
-        verbose_name_plural = 'Типы жилья'
+        verbose_name = 'Метро'
+        verbose_name_plural = 'Метро'
+
+
+class PublicationStatus(models.Model):
+    name = models.CharField('Статус публикации', unique=True, max_length=50)
+
+    def __str__(self):
+        return f'{self.name}'
+
+    class Meta:
+        verbose_name = 'Статус публикации'
+        verbose_name_plural = 'Статусы публикации'
 
 
 class PublishedHousing(models.Model):
@@ -129,6 +153,7 @@ class PublishedHousing(models.Model):
     date_begin = models.DateTimeField('Дата начала')
     date_end = models.DateTimeField('Дата конца')
     activity = models.BooleanField('Активность', default=True, db_default=True)
+    status = models.ForeignKey(PublicationStatus, verbose_name='Статус публикации', on_delete=models.PROTECT)
     price = models.DecimalField('Цена за одно место', max_digits=12, decimal_places=2)
     currency = models.ForeignKey(Currency, verbose_name='Валюта', on_delete=models.PROTECT)
 
@@ -148,6 +173,24 @@ class PublishedHousing(models.Model):
     class Meta:
         verbose_name = 'Опубликованное жилье'
         verbose_name_plural = 'Опубликованное жилье'
+
+
+class MessagesRequest(models.Model):
+    publish_housing = models.ForeignKey(PublishedHousing, verbose_name='Публикация', on_delete=models.CASCADE)
+    sender = models.ForeignKey(User, verbose_name='От кого', related_name='sent_messages', on_delete=models.CASCADE)
+    recipient = models.ForeignKey(User, verbose_name='Кому', related_name='recipient_messages', on_delete=models.CASCADE)
+    title = models.CharField('Тема сообщения', max_length=50)
+    text = models.TextField('Сообщение', max_length=500)
+    reason = models.BooleanField('Настроение сообщения', null=True, blank=True, default=None)
+    date_push = models.DateTimeField('Дата отправки', auto_now_add=True)
+
+    def __str__(self):
+        return f'Уведомление от {self.sender.username} к {self.recipient.username} по поводу {self.publish_housing}'
+
+    class Meta:
+        verbose_name = 'Уведомление'
+        verbose_name_plural = 'Уведомления'
+        ordering = ['-date_push']
 
 
 class Feedback(models.Model):
@@ -226,16 +269,19 @@ class Message(models.Model):
         verbose_name_plural = 'Сообщения'
 
 
-class CartItem(models.Model):
-    product = models.ForeignKey(PublishedHousing, on_delete=models.CASCADE, verbose_name='Товар в корзине')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Владелец корзины', related_name='cart')
+class BuyRequest(models.Model):
+    product = models.ForeignKey(PublishedHousing, on_delete=models.CASCADE, verbose_name='Товар')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', related_name='cart')
     number_of_seats = models.PositiveIntegerField('Количество мест')
     date_begin = models.DateTimeField('Дата начала')
     date_end = models.DateTimeField('Дата конца')
+    price = models.DecimalField('Цена', max_digits=12, decimal_places=2)
+    owner_confirm = models.BooleanField('Подтверждение хозяина', default=False)
+    buyer_confirm = models.BooleanField('Подтверждение покупателя', default=True)
+    contract = models.FileField('Договор',  upload_to='contracts/%Y/%m/%d/', null=True, blank=True,)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['product', 'user'], name='unique_cart_item')
         ]
 
     def clean(self):

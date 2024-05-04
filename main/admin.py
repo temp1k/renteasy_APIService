@@ -1,8 +1,8 @@
 from django.contrib import admin
 
 # Register your models here.
-from main.models import Category, Image, Country, Housing, HousingImages, Tag, TypeHousing, Chat, Message, Feedback, \
-    PublishedHousing, Currency
+from main.models import Category, Image, Housing, HousingImages, Tag, Chat, Message, Feedback, \
+    PublishedHousing, Currency, City, Metro, District, PublicationStatus, MessagesRequest, BuyRequest
 
 admin.site.register(Category)
 
@@ -12,7 +12,7 @@ class ImagesAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(Country)
+@admin.register(City)
 class CountriesAdmin(admin.ModelAdmin):
     pass
 
@@ -32,13 +32,23 @@ class TagsAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(TypeHousing)
+@admin.register(Metro)
 class TypesAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(District)
+class DistrictAdmin(admin.ModelAdmin):
     pass
 
 
 @admin.register(Message)
 class MessagesAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(PublicationStatus)
+class PublicationStatusAdmin(admin.ModelAdmin):
     pass
 
 
@@ -62,4 +72,11 @@ class CurrencyAdmin(admin.ModelAdmin):
     pass
 
 
+@admin.register(MessagesRequest)
+class MessagesRequestAdmin(admin.ModelAdmin):
+    pass
 
+
+@admin.register(BuyRequest)
+class BuyRequestAdmin(admin.ModelAdmin):
+    pass

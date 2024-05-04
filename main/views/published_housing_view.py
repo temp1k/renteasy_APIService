@@ -3,17 +3,28 @@ import datetime
 from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 
-from main.models import PublishedHousing
-from main.my_permissions import PublishedHousingPermissions
-from main.serializers import PublishedHousingSerializer
+from main.models import PublishedHousing, PublicationStatus
+from main.my_permissions import PublishedHousingPermissions, IsModerator
+from main.serializers import PublishedHousingSerializer, RequestSerializer, MessagesRequestSerializer
 
 
 class PublishedHousingViewSet(viewsets.ModelViewSet):
     queryset = PublishedHousing.objects.all()
     serializer_class = PublishedHousingSerializer
     permission_classes = (PublishedHousingPermissions,)
+
+    def pagination(self, queryset):
+        page = self.paginate_queryset(queryset=queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -41,6 +52,32 @@ class PublishedHousingViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    @action(methods=['get'], detail=False, permission_classes=[AllowAny])
+    def publish(self, request):
+        queryset = self.get_queryset()
+        queryset = queryset.filter(status__name='Одобрено')
+
+        if len(queryset) == 0:
+            return Response({'message': 'Объектов нет', }, status=status.HTTP_404_NOT_FOUND)
+
+        return self.pagination(queryset=queryset)
+
+    @action(methods=['get'], detail=False, serializer_class=RequestSerializer, permission_classes=[IsModerator])
+    def requests(self, request):
+        queryset = self.get_queryset()
+
+        publicationStatus = request.query_params.get('status', None)
+
+        if publicationStatus is not None and publicationStatus != '':
+            queryset = queryset.filter(status__name=publicationStatus)
+
+        queryset = queryset.order_by('date_publish', 'housing__date_update')
+
+        if len(queryset) == 0:
+            return Response({'message': 'Объектов нет', }, status=status.HTTP_404_NOT_FOUND)
+
+        return self.pagination(queryset=queryset)
+
     @action(methods=['get'], detail=False)
     def my(self, request):
         queryset = self.get_queryset()
@@ -50,11 +87,26 @@ class PublishedHousingViewSet(viewsets.ModelViewSet):
         if len(queryset) == 0:
             return Response({'message': 'У вас нет объектов', }, status=status.HTTP_404_NOT_FOUND)
 
-        page = self.paginate_queryset(queryset=queryset)
+        return self.pagination(queryset=queryset)
 
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+    @action(methods=['put'], detail=True, permission_classes=[IsModerator])
+    def request(self, request, pk=None):
+        publication_status = request.data.get('status', None)
+        message = request.data.get('message')
 
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        try:
+            published_housing = self.get_object()
+            published_housing.status = PublicationStatus.objects.get(name=publication_status)
+            published_housing.save()
+
+            if message is not None:
+                messageSerializer = MessagesRequestSerializer(data=message)
+                if messageSerializer.is_valid():
+                    messageSerializer.save()
+
+            serializer = PublishedHousingSerializer(published_housing)
+            return Response(serializer.data)
+        except PublishedHousing.DoesNotExist:
+            return Response({'error': 'PublishedHousing not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as err:
+            return Response({'error': str(err)}, status=status.HTTP_400_BAD_REQUEST)

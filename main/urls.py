@@ -7,25 +7,27 @@ from rest_framework_simplejwt.views import (
 
 from main.views import (
     test, category_view,
-    housing_view, country_view,
+    housing_view, city_view,
     auth_view, tag_view,
     published_housing_view,
     feedback_view, favorite_view,
-    cart_view, images_view,
-    type_view,
+    images_view, buy_request_view,
+    metro_view, district_view, notification_view
 )
 
 router = routers.DefaultRouter()
-router.register(r'countries', country_view.CountryViewSet)
+router.register(r'city', city_view.CityViewSet)
+router.register(r'districts', district_view.DistrictViewSet)
 router.register(r'categories', category_view.CategoryViewSet)
 router.register(r'housings', housing_view.HousingViewSet)
 router.register(r'tags', tag_view.TagViewSet)
+router.register(r'buy_requests', buy_request_view.BuyRequestViewSet)
+router.register(r'notifications', notification_view.NotificationViewSet)
 router.register(r'published_housings', published_housing_view.PublishedHousingViewSet)
 router.register(r'feedbacks', feedback_view.FeedbackViewSet)
 router.register(r'favorites', favorite_view.FavoriteViewSet)
-router.register(r'cart', cart_view.CartViewSet)
 router.register(r'images', images_view.ImagesViewSet)
-router.register(r'types', type_view.TypeViewSet)
+router.register(r'metro', metro_view.MetroViewSet)
 
 urlpatterns = [
     re_path('test.', test.index),

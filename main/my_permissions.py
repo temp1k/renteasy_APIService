@@ -3,6 +3,34 @@ from rest_framework import permissions
 from main.models import PublishedHousing
 
 
+def check_user_role(user, role):
+    return user.groups.filter(name=role).exists()
+
+
+class NotificationPermissions(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+        if not (check_user_role(user, 'Landlord') and check_user_role(user, 'Moderator')):
+            return False
+
+        if request.method in ('POST', 'CREATE'):
+            return bool(obj.sender == user)
+
+        return True
+
+
+class BuyRequestPermissions(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+        return bool(check_user_role(user, 'Landlord') or check_user_role(user, 'User') or user.is_staff)
+
+
+class ChangeActiveBuyRequestPermissions(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+        return bool(check_user_role(user, 'Landlord') and obj.product.housing.owner==user or user.is_staff)
+
+
 class HousingPermissions(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.user == obj.owner:
@@ -19,13 +47,16 @@ class HousingPermissions(permissions.BasePermission):
 
 class IsOwnerOrAdmin(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-
         if request.user.is_staff:
             return True
 
         return obj == request.user
 
-        return False
+
+class IsModerator(permissions.BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        return bool(user.is_authenticated and check_user_role(request.user, 'Moderator') or user.is_staff)
 
 
 class PublishedHousingPermissions(permissions.BasePermission):
@@ -34,10 +65,12 @@ class PublishedHousingPermissions(permissions.BasePermission):
             return True
 
         if request.method in ('POST', 'CREATE'):
-            return bool(request.user.is_authenticated)
+            return bool(request.user.is_authenticated and check_user_role(request.user, 'Landlord'))
 
         if request.method == 'GET':
-            return True
+            if request.user and request.user.is_staff:
+                return True
+            return bool(obj.status.name == 'Одобрено' or check_user_role(request.user, 'Moderator'))
 
         if request.method in ('DELETE', 'PUT'):
             return bool(request.user and request.user.is_staff)
