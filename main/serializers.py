@@ -1,9 +1,6 @@
-import datetime
 import logging
-from abc import ABC
 
 from django.contrib.auth import get_user_model
-from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
 
 from main.models import Category, Housing, HousingImages, Image, Tag, PublishedHousing, Currency, Feedback, \
@@ -15,9 +12,14 @@ logger = logging.getLogger('django')
 
 
 class UserSerializer(serializers.ModelSerializer):
+    FIO = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'is_active', 'groups']
+        fields = ['id', 'username', 'email', 'is_active', 'groups', 'FIO']
+
+    def get_FIO(self, obj):
+        return obj.get_full_name()
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -68,6 +70,17 @@ class DistrictSerializer(serializers.ModelSerializer):
     class Meta:
         model = District
         fields = "__all__"
+
+
+class DistrictsStatisticsSerializer(serializers.ModelSerializer):
+    count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = District
+        fields = "__all__"
+
+    def get_count(self, obj):
+        return PublishedHousing.objects.filter(housing__district=obj).count()
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -202,9 +215,16 @@ class FavoriteSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class ProductCheckSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BuyRequest
+        fields = ['product']
+
+
 class BuyRequestSerializer(serializers.ModelSerializer):
-    product_detail = PublishHousingShortSerializer(read_only=True, source='product')
+    product_d = PublishHousingShortSerializer(read_only=True, source='product')
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    owner = UserSerializer(source='product.housing.owner', read_only=True)
 
     class Meta:
         model = BuyRequest

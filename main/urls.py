@@ -31,6 +31,7 @@ router.register(r'metro', metro_view.MetroViewSet)
 
 urlpatterns = [
     re_path('test.', test.index),
+    re_path('get_url/', auth_view.PathsView.as_view()),
     # path('users/', test.AllUsersAPIView.as_view()),
     # path('users/<int:user_id>', test.SingleUserApiView.as_view()),
 

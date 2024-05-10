@@ -1,5 +1,5 @@
 from django.contrib.admin import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group, Permission, GroupManager
 from django.core.validators import RegexValidator
 
 from django.db import models
@@ -20,12 +20,19 @@ class CustomUser(AbstractUser):
     )
     passport_series = models.CharField('Серия паспорта', max_length=4, validators=[
         RegexValidator(regex=r'^\d{4}$', message='Серия паспорта должна состоять из 4 цифр')
-    ])
+    ], null=False)
     passport_number = models.CharField('Номер паспорта', max_length=6, validators=[
         RegexValidator(regex=r'^\d{6}$', message='Серия паспорта должна состоять из 6 цифр')
-    ])
-    passport_from = models.CharField('Кем выдан паспорт', max_length=100)
-    passport_registration_address = models.CharField('Зарегистрирован по адресу', max_length=200)
+    ], null=False)
+    passport_from = models.CharField('Кем выдан паспорт', max_length=100, null=False)
+    passport_registration_address = models.CharField('Зарегистрирован по адресу', max_length=200, null=False)
+    groups = models.ManyToManyField(
+        'CustomGroup',
+        verbose_name="Группы",
+        related_name='users_roles',
+        blank=True,
+        null=True,
+    )
 
     objects = CustomUserManager()
 
@@ -45,3 +52,19 @@ class CustomUser(AbstractUser):
 class Codes(models.Model):
     code = models.CharField(max_length=50)
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+
+
+class CustomGroup(models.Model):
+    name = models.CharField("Название", max_length=150, unique=True)
+    permissions = models.ManyToManyField(
+        Permission,
+        verbose_name="Права",
+        blank=True,
+    )
+    users_guide = models.FileField('Руководство пользователя', upload_to='guids/', null=True, blank=True)
+
+    objects = GroupManager()
+
+    class Meta:
+        verbose_name = 'Роль'
+        verbose_name_plural = 'Роли'

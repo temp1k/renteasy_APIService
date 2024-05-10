@@ -3,6 +3,7 @@ from datetime import datetime
 from django.core.files.base import ContentFile
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from main.models import BuyRequest
@@ -39,6 +40,7 @@ class BuyRequestViewSet(viewsets.ModelViewSet):
         try:
             buy_request = BuyRequest.objects.get(pk=pk)
             buy_request.owner_confirm = bool(request.data.get('status', False))
+            buy_request.save()
 
             if buy_request.owner_confirm \
                     and buy_request.buyer_confirm:
@@ -46,7 +48,6 @@ class BuyRequestViewSet(viewsets.ModelViewSet):
                     buy_request = create_contract(buy_request.id)
             else:
                 buy_request.contract = None
-                buy_request.save()
 
             serializer = BuyRequestSerializer(buy_request)
 
@@ -55,5 +56,24 @@ class BuyRequestViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Заявка не найдена'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as err:
             return Response({'error': str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated])
+    def get_user_requests(self, request):
+        user = request.user
+        queryset = self.get_queryset().filter(user=user)
+        if queryset.count() == 0:
+            return Response({'message': 'У вас нет брони'}, status=404)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated])
+    def get_owner_requests(self, request):
+        user = request.user
+        queryset = self.get_queryset().filter(product__housing__owner=user)
+        if queryset.count() == 0:
+            return Response({'message': 'У вас заявок на покупку'}, status=404)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
 
 

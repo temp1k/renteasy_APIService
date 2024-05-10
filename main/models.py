@@ -153,7 +153,7 @@ class PublishedHousing(models.Model):
     date_begin = models.DateTimeField('Дата начала')
     date_end = models.DateTimeField('Дата конца')
     activity = models.BooleanField('Активность', default=True, db_default=True)
-    status = models.ForeignKey(PublicationStatus, verbose_name='Статус публикации', on_delete=models.PROTECT)
+    status = models.ForeignKey(PublicationStatus, verbose_name='Статус публикации', on_delete=models.PROTECT, default=1)
     price = models.DecimalField('Цена за одно место', max_digits=12, decimal_places=2)
     currency = models.ForeignKey(Currency, verbose_name='Валюта', on_delete=models.PROTECT)
 
@@ -279,10 +279,10 @@ class BuyRequest(models.Model):
     owner_confirm = models.BooleanField('Подтверждение хозяина', default=False)
     buyer_confirm = models.BooleanField('Подтверждение покупателя', default=True)
     contract = models.FileField('Договор',  upload_to='contracts/%Y/%m/%d/', null=True, blank=True,)
+    is_buy = models.BooleanField('Статус оплаты', default=False)
 
     class Meta:
-        constraints = [
-        ]
+        unique_together = ('product', 'user')
 
     def clean(self):
         super().clean()
@@ -296,3 +296,4 @@ class BuyRequest(models.Model):
             raise ValidationError(
                 {'date_error': 'Неверно указаны даты'}
             )
+

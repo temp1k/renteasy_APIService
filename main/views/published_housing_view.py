@@ -1,14 +1,13 @@
-import datetime
-
 from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from main.models import PublishedHousing, PublicationStatus
+from main.models import PublishedHousing, PublicationStatus, BuyRequest
 from main.my_permissions import PublishedHousingPermissions, IsModerator
-from main.serializers import PublishedHousingSerializer, RequestSerializer, MessagesRequestSerializer
+from main.serializers import PublishedHousingSerializer, RequestSerializer, MessagesRequestSerializer, \
+    ProductCheckSerializer
 
 
 class PublishedHousingViewSet(viewsets.ModelViewSet):
@@ -110,3 +109,18 @@ class PublishedHousingViewSet(viewsets.ModelViewSet):
             return Response({'error': 'PublishedHousing not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as err:
             return Response({'error': str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False,
+            methods=['POST'],
+            serializer_class=ProductCheckSerializer,
+            permission_classes=[IsAuthenticated])
+    def is_buy(self, request):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            check = BuyRequest.objects.filter(product=serializer.validated_data['product'],
+                                              user=request.user,
+                                              owner_confirm=True,
+                                              buyer_confirm=True).exists()
+            return Response(check)
+
+        return Response(serializer.errors, status=400)

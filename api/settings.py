@@ -165,55 +165,55 @@ REST_FRAMEWORK = {
     )
 }
 
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": True,
-
-    # formatters - то как логи выводятся
-    'formatters': {
-        "main_format": {
-            "format": '%(asctime)s - %(levelname)s - %(name)s -  %(filename)s - %(funcName)s - %('
-                      'message)s',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
-
-        },
-        "json_formatter": {
-            '()': CustomJsonFormatter,
-        }
-    },
-
-    # handlers - то, что обрабатывает логи
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'main_format',
-        },
-        'django_file': {
-            'class': 'logging.FileHandler',
-            'formatter': 'json_formatter',
-            'filename': 'django_info.log',
-            'encoding': 'utf-8',
-        },
-        "db_log": {
-            'level': 'WARNING',
-            'class': 'django_db_logger.db_log_handler.DatabaseLogHandler'
-        },
-    },
-
-    # loggers - то, как сохраняются логи
-    'loggers': {
-        'django': {
-            'handlers': ['console', 'django_file'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'db': {
-            'handlers': ['db_log'],
-            'level': 'WARN',
-            'propagate': True,
-        }
-    },
-}
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": True,
+#
+#     # formatters - то как логи выводятся
+#     'formatters': {
+#         "main_format": {
+#             "format": '%(asctime)s - %(levelname)s - %(name)s -  %(filename)s - %(funcName)s - %('
+#                       'message)s',
+#             'datefmt': '%Y-%m-%d %H:%M:%S',
+#
+#         },
+#         "json_formatter": {
+#             '()': CustomJsonFormatter,
+#         }
+#     },
+#
+#     # handlers - то, что обрабатывает логи
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'main_format',
+#         },
+#         'django_file': {
+#             'class': 'logging.FileHandler',
+#             'formatter': 'json_formatter',
+#             'filename': 'django_info.log',
+#             'encoding': 'utf-8',
+#         },
+#         "db_log": {
+#             'level': 'WARNING',
+#             'class': 'django_db_logger.db_log_handler.DatabaseLogHandler'
+#         },
+#     },
+#
+#     # loggers - то, как сохраняются логи
+#     'loggers': {
+#         'django': {
+#             'handlers': ['console', 'django_file'],
+#             'level': 'INFO',
+#             'propagate': True,
+#         },
+#         'db': {
+#             'handlers': ['db_log'],
+#             'level': 'WARN',
+#             'propagate': True,
+#         }
+#     },
+# }
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=2),
@@ -256,3 +256,22 @@ SIMPLE_JWT = {
 }
 
 AUTH_USER_MODEL = "users.CustomUser"
+AUTH_GROUP_MODEL = "users.CustomGroups"
+
+# EMAIL
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "gnusarovvladislav@gmail.com"
+EMAIL_HOST_PASSWORD = "jamedkhdwsglodox"
+
+
+DJOSER = {
+    'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
+    'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}',
+    'ACTIVATION_URL': '#/activate/{uid}/{token}',
+    'SEND_ACTIVATION_EMAIL': True,
+    'SERIALIZERS': {},
+}

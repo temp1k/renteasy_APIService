@@ -28,14 +28,13 @@ class PaginationHousings(PageNumberPagination):
 
 
 def format_date(date):
-    day = ('0'+str(date.day))[-2:]
-    month = ('0'+str(date.month))[-2:]
+    day = ('0' + str(date.day))[-2:]
+    month = ('0' + str(date.month))[-2:]
     return f'{day}.{month}.{date.year}'
 
 
 def create_contract(pk):
     dir_path = os.path.abspath('./media/shablons/')
-    print(dir_path)
     doc = Document(dir_path + '\shablon_dogovor.docx')
     buy_request = BuyRequest.objects.get(pk=pk)
     date_begin = buy_request.date_begin
@@ -49,8 +48,8 @@ def create_contract(pk):
             paragraph.text = paragraph.text.replace('ГОРОД', buy_request.product.housing.city.name)
         if 'dd' in paragraph.text and 'mm' in paragraph.text and 'yyyy' in paragraph.text:
             now = datetime.now()
-            paragraph.text = paragraph.text.replace('dd', ('0'+str(now.day))[-2:])
-            paragraph.text = paragraph.text.replace('mm', ('0'+str(now.month))[-2:])
+            paragraph.text = paragraph.text.replace('dd', ('0' + str(now.day))[-2:])
+            paragraph.text = paragraph.text.replace('mm', ('0' + str(now.month))[-2:])
             paragraph.text = paragraph.text.replace('yyyy', str(now.year))
         if 'ФИО_АРЕНДОДАТЕЛЬ' in paragraph.text:
             paragraph.text = paragraph.text.replace('ФИО_АРЕНДОДАТЕЛЬ',
@@ -65,8 +64,8 @@ def create_contract(pk):
             paragraph.text = paragraph.text.replace('ДАТА_КОНЦА', format_date(date_end))
         if 'ЦЕНА' in paragraph.text:
             paragraph.text = paragraph.text.replace('ЦЕНА', str(buy_request.price))
-        if 'ИНИЦИАЛЫ_АРЕНДОДАТЕЛЬ ' in paragraph.text:
-            paragraph.text = paragraph.text.replace('ИНИЦИАЛЫ_АРЕНДОДАТЕЛЬ ', landlord.get_initial())
+        if 'ИНИЦИАЛЫ_АРЕНДОДАТЕЛЬ' in paragraph.text:
+            paragraph.text = paragraph.text.replace('ИНИЦИАЛЫ_АРЕНДОДАТЕЛЬ', landlord.get_initial())
 
     for table in doc.tables:
         for row in table.rows:
@@ -81,7 +80,7 @@ def create_contract(pk):
                     cell.text = cell.text.replace('ПАСПОРТ_ВЫДАН_АРЕНДОДАТЕЛЬ', landlord.passport_from)
                 if 'ПАСПОРТ_ЗАРЕГИСТРИРОВАН_АРЕНДОДАТЕЛЬ' in cell.text:
                     cell.text = cell.text.replace('ПАСПОРТ_ЗАРЕГИСТРИРОВАН_АРЕНДОДАТЕЛЬ',
-                                                            landlord.passport_registration_address)
+                                                  landlord.passport_registration_address)
                 if 'ИНИЦИАЛЫ_АРЕНДОДАТЕЛЬ' in cell.text:
                     cell.text = cell.text.replace('ИНИЦИАЛЫ_АРЕНДОДАТЕЛЬ', landlord.get_initial())
                 if 'ПАСПОРТ_СЕРИЯ_НАНИМАТЕЛЬ' in cell.text:
@@ -99,9 +98,9 @@ def create_contract(pk):
     # Сохранение измененного документа во временный файл
     temp_file_path = dir_path + '//temp.docx'
     doc.save(temp_file_path)
-    file_name = f'Dogovor_{datetime.now()}.docx'.encode('utf-8')
+    file_name = f'Dogovor_{datetime.now()}.docx'
     with open(temp_file_path, 'rb') as f:
-        buy_request.contract.save(file_name.decode('utf-8'), ContentFile(f.read()), save=True)
+        buy_request.contract.save(file_name, ContentFile(f.read()), save=True)
 
     buy_request.save()
     os.remove(temp_file_path)

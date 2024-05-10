@@ -1,6 +1,6 @@
-from django.contrib.auth.models import Group
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
+
+from users.models import CustomGroup
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -10,7 +10,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         # Add custom claims
         token['login'] = user.username
-        token['roles'] = [group.name for group in Group.objects.filter(user=user)]
+        token['roles'] = [group.name for group in user.groups.all()]
         # ...
 
         return token
