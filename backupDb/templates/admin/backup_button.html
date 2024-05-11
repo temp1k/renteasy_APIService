@@ -1,0 +1,12 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<div>
+    <h1>{{ title }}</h1>
+    <form method="post" action="{% url 'admin:backup-button' %}">
+        {% csrf_token %}
+        <button type="submit" class="button" style="margin-top: 20px;">Backup Database</button>
+    </form>
+</div>
+{% endblock %}

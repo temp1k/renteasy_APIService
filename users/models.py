@@ -28,10 +28,8 @@ class CustomUser(AbstractUser):
     passport_registration_address = models.CharField('Зарегистрирован по адресу', max_length=200, null=False)
     groups = models.ManyToManyField(
         'CustomGroup',
-        verbose_name="Группы",
-        related_name='users_roles',
-        blank=True,
-        null=True,
+        verbose_name="Роли",
+        related_name='users_roles'
     )
 
     objects = CustomUserManager()
@@ -64,6 +62,9 @@ class CustomGroup(models.Model):
     users_guide = models.FileField('Руководство пользователя', upload_to='guids/', null=True, blank=True)
 
     objects = GroupManager()
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         verbose_name = 'Роль'

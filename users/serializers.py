@@ -48,7 +48,6 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'password': {'write_only': True},
             'groups': {'read_only': True},
-            'guide': {'read_only': True}
         }
 
     def get_groups(self, obj):
@@ -78,10 +77,9 @@ class UserChangeSerializer(UserSerializer):
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'patronymic',
                   'passport_series', 'passport_number', 'passport_from', 'passport_registration_address',
-                  'groups', 'guide', 'is_success']
+                  'groups', 'is_success']
         extra_kwargs = {
-            'groups': {'read_only': True},
-            'guide': {'read_only': True}
+            'groups': {'read_only': True}
         }
 
 
