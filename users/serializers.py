@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
 from rest_framework import serializers
 
 from users.models import CustomGroup
@@ -12,7 +11,7 @@ def get_or_create_groups_from_string(group_string):
 
     groups = []
     for group_name in group_names:
-        group, created = Group.objects.get_or_create(name=group_name)
+        group, created = CustomGroup.objects.get_or_create(name=group_name)
         groups.append(group)
 
     return groups
@@ -20,7 +19,7 @@ def get_or_create_groups_from_string(group_string):
 
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Group
+        model = CustomGroup
         fields = '__all__'
 
 
