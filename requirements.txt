@@ -1,6 +1,7 @@
 djangorestframework==3.14.0
-django==5.0.1
+Django==5.0.1
 djoser==2.2.2
+dj-database-url==2.1.0
 django-cors-headers==4.3.1
 django_db_logger==0.1.13
 djangorestframework-simplejwt==5.3.1
