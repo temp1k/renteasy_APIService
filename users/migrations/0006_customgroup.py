@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('auth', '0016_remove_group_users_guide'),
+        # ('auth', '0016_remove_group_users_guide'),
         ('users', '0005_alter_customuser_passport_number'),
     ]
 
