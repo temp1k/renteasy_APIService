@@ -1,5 +1,5 @@
 djangorestframework==3.14.0
-Django==5.0.1
+Django==4.0.1
 djoser==2.2.2
 dj-database-url==2.1.0
 django-cors-headers==4.3.1
