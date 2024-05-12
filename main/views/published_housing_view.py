@@ -45,9 +45,9 @@ class PublishedHousingViewSet(viewsets.ModelViewSet):
         if end_date is not None and end_date != '':
             queryset = queryset.filter(date_begin__lte=end_date, date_end__gte=end_date)
 
-        country = self.request.query_params.get('country', None)
-        if country is not None and country != '':
-            queryset = queryset.filter(housing__country=country)
+        district = self.request.query_params.get('district', None)
+        if district is not None and district != '':
+            queryset = queryset.filter(housing__district=district)
 
         return queryset
 
