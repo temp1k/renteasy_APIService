@@ -59,7 +59,7 @@ class City(models.Model):
 
 
 class Currency(models.Model):
-    name = models.CharField('Название', unique=True)
+    name = models.CharField('Название', unique=True, max_length=100)
     code = models.CharField('Кодовое название', unique=True, max_length=4)
     publish_name = models.CharField('Сокращенное название', max_length=5)
     value = models.DecimalField('Значение', max_digits=12, decimal_places=5, null=True, blank=True)
@@ -73,12 +73,12 @@ class Currency(models.Model):
 
 
 class Housing(models.Model):
-    name = models.CharField('Название жилья', unique=True)
-    short_name = models.CharField('Сокращенное название', null=True, blank=True)
+    name = models.CharField('Название жилья', unique=True, max_length=255)
+    short_name = models.CharField('Сокращенное название', null=True, blank=True,  max_length=50)
     date_creation = models.DateTimeField('Дата создания', auto_now_add=True)
     date_update = models.DateTimeField('Дата обновления', auto_now=True)
     city = models.ForeignKey(City, on_delete=models.PROTECT, verbose_name='Город', related_name='housings')
-    address = models.CharField('Адрес')
+    address = models.CharField('Адрес', max_length=255)
     number_of_seats = models.PositiveIntegerField('Количество мест', default=1)
     description = models.TextField('Описание', null=True)
     district = models.ForeignKey(District, on_delete=models.PROTECT, verbose_name='Округ', related_name='housings')
@@ -114,7 +114,7 @@ class HousingImages(models.Model):
 
 
 class Tag(models.Model):
-    name = models.CharField('Название тега', unique=True)
+    name = models.CharField('Название тега', unique=True,  max_length=50)
 
     def __str__(self):
         return f'{self.name}'
@@ -125,7 +125,7 @@ class Tag(models.Model):
 
 
 class Metro(models.Model):
-    name = models.CharField('Метро', unique=True)
+    name = models.CharField('Метро', unique=True,  max_length=100)
     city = models.ForeignKey(City, verbose_name='Город', on_delete=models.PROTECT)
 
     def __str__(self):
@@ -152,7 +152,7 @@ class PublishedHousing(models.Model):
     date_publish = models.DateField('Дата публикации', auto_now_add=True)
     date_begin = models.DateTimeField('Дата начала')
     date_end = models.DateTimeField('Дата конца')
-    activity = models.BooleanField('Активность', default=True, db_default=True)
+    activity = models.BooleanField('Активность', default=True)
     status = models.ForeignKey(PublicationStatus, verbose_name='Статус публикации', on_delete=models.PROTECT, default=1)
     price = models.DecimalField('Цена за одно место', max_digits=12, decimal_places=2)
     currency = models.ForeignKey(Currency, verbose_name='Валюта', on_delete=models.PROTECT)

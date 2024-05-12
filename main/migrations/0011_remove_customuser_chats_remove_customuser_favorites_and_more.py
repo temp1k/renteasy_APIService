@@ -43,7 +43,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='publishedhousing',
             name='activity',
-            field=models.BooleanField(db_default=models.Value(True), default=True, verbose_name='Активность'),
+            field=models.BooleanField(default=True, verbose_name='Активность'),
         ),
         migrations.AlterField(
             model_name='publishedhousing',

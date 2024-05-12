@@ -16,7 +16,8 @@ class CustomUser(AbstractUser):
     patronymic = models.CharField(
         "Отчество",
         default=None,
-        null=True, blank=True
+        null=True, blank=True,
+        max_length=100,
     )
     passport_series = models.CharField('Серия паспорта', max_length=4, validators=[
         RegexValidator(regex=r'^\d{4}$', message='Серия паспорта должна состоять из 4 цифр')
