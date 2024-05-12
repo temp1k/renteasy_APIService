@@ -8,3 +8,5 @@ SECRET_KEY = config('SECRET_KEY')
 DATABASES['default'] = dj_database_url.parse(config('DATABASE_URL'))
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS').split(' ')
+
+CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED').split(' ')
