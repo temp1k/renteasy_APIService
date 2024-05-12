@@ -1,7 +1,6 @@
 import random
 
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
 from django.core.mail import send_mail
 from django.db.models import Q
 from rest_framework import viewsets, status
@@ -11,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from main.my_permissions import IsModerator
-from .models import Codes
+from .models import Codes, CustomGroup
 from .my_permissions import UserPermissions, UserChangePermissions
 from .serializers import UserSerializer, CodeEmailSerializer, CodeSerializer, CodePasswordSerializer, \
     UserChangeSerializer, GuideSerializer
@@ -42,7 +41,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['POST'], permission_classes=[IsAuthenticated])
     def subscribe_pro(self, request):
         user = request.user
-        group, created = Group.objects.get_or_create(name='Landlord')
+        group, created = CustomGroup.objects.get_or_create(name='Landlord')
         user.groups = [group]
         user.save()
         serializer = self.get_serializer(user)
