@@ -77,7 +77,8 @@ class Housing(models.Model):
     short_name = models.CharField('Сокращенное название', null=True, blank=True,  max_length=50)
     date_creation = models.DateTimeField('Дата создания', auto_now_add=True)
     date_update = models.DateTimeField('Дата обновления', auto_now=True)
-    city = models.ForeignKey(City, on_delete=models.PROTECT, verbose_name='Город', related_name='housings')
+    city = models.ForeignKey(City, on_delete=models.PROTECT, verbose_name='Город', related_name='housings',
+                             null=True, blank=True)
     address = models.CharField('Адрес', max_length=255)
     number_of_seats = models.PositiveIntegerField('Количество мест', default=1)
     description = models.TextField('Описание', null=True)

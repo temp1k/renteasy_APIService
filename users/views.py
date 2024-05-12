@@ -42,7 +42,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def subscribe_pro(self, request):
         user = request.user
         group, created = CustomGroup.objects.get_or_create(name='Landlord')
-        user.groups = [group]
+        user.groups.set([group])
         user.save()
         serializer = self.get_serializer(user)
         return Response(serializer.data)

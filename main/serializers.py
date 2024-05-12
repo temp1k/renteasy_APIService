@@ -125,10 +125,13 @@ class HousingSerializer(serializers.ModelSerializer):
     tags_d = TagSerializer(many=True, source='tags', read_only=True)
     categories_d = CategorySerializer(many=True, source='categories', read_only=True)
     metro_d = MetroSerializer(many=True, source='metro', read_only=True)
+    city = serializers.IntegerField(required=False)
+    tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True, required=False)  # ManyToMany поле
 
     class Meta:
         model = Housing
         fields = "__all__"
+
 
 
 class PublicationStatusSerializer(serializers.ModelSerializer):
