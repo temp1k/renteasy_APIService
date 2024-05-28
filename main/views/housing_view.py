@@ -21,18 +21,9 @@ class HousingViewSet(viewsets.ModelViewSet):
         pk = self.kwargs.get('pk')
 
         if not pk:
-            return Housing.objects.all().order_by('pk')
+            return Housing.objects.all().order_by('-pk')
 
         return Housing.objects.filter(pk=pk)
-
-    @action(methods=['get'], detail=True)
-    def country(self, request, pk=None):
-        housing = Housing.objects.get(pk=pk)  # исправить ошибку ненахождения записи
-
-        if housing is None:
-            return Response({'message': 'Запись не найдена', }, status=status.HTTP_404_NOT_FOUND)
-
-        return Response({'country': housing.country.name})
 
     @action(methods=['get'], detail=False)
     def my(self, request):

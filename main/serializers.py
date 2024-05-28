@@ -118,6 +118,7 @@ class HousingSerializer(serializers.ModelSerializer):
             fields = ['id', 'username']
 
     district_d = DistrictSerializer(many=False, read_only=True, source='district')
+    city_d = CitySerializer(many=False, read_only=True, source='city')
     images_d = ImageSerializer(many=True, read_only=True, source='images')
     images = serializers.PrimaryKeyRelatedField(queryset=Image.objects.all(), many=True)
     owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
@@ -126,7 +127,6 @@ class HousingSerializer(serializers.ModelSerializer):
     categories_d = CategorySerializer(many=True, source='categories', read_only=True)
     metro_d = MetroSerializer(many=True, source='metro', read_only=True)
     tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True, required=False)  # ManyToMany поле
-    city = serializers.PrimaryKeyRelatedField(queryset=City.objects.all(), many=False, required=False)
 
     class Meta:
         model = Housing
@@ -228,6 +228,7 @@ class BuyRequestSerializer(serializers.ModelSerializer):
     product_d = PublishHousingShortSerializer(read_only=True, source='product')
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     owner = UserSerializer(source='product.housing.owner', read_only=True)
+    buyer = UserSerializer(source='user', read_only=True)
 
     class Meta:
         model = BuyRequest
@@ -237,6 +238,22 @@ class BuyRequestSerializer(serializers.ModelSerializer):
         buy_request = BuyRequest(**attrs)
         buy_request.full_clean()
         return attrs
+
+
+class FullBuyRequestSerializer(serializers.ModelSerializer):
+    product_d = PublishedHousingSerializer(read_only=True, source='product')
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    owner = UserSerializer(source='product.housing.owner', read_only=True)
+
+    class Meta:
+        model = BuyRequest
+        fields = "__all__"
+
+    def validate(self, attrs):
+        buy_request = BuyRequest(**attrs)
+        buy_request.full_clean()
+        return attrs
+
 
 # def encode():
 #     model = CategoryModel('Квартира')

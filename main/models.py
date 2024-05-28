@@ -89,7 +89,7 @@ class Housing(models.Model):
     ])
     owner = models.ForeignKey(User, verbose_name='Владелец', on_delete=models.PROTECT)
     categories = models.ManyToManyField('Category', verbose_name='Категории', related_name='housings')
-    tags = models.ManyToManyField('Tag', verbose_name='Теги', related_name='housings')
+    tags = models.ManyToManyField('Tag', verbose_name='Теги', related_name='housings', blank=True)
     metro = models.ForeignKey('Metro', verbose_name='Метро', on_delete=models.PROTECT, null=True, blank=True)
     images = models.ManyToManyField('Image', verbose_name='Изображения', through='HousingImages',
                                     related_name='housing')

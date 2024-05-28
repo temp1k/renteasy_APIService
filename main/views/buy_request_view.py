@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from main.models import BuyRequest
 from main.my_permissions import BuyRequestPermissions, ChangeActiveBuyRequestPermissions
-from main.serializers import BuyRequestSerializer, StatusRequestSerializer
+from main.serializers import BuyRequestSerializer, StatusRequestSerializer, FullBuyRequestSerializer
 from main.service import create_contract
 
 
@@ -16,6 +16,24 @@ class BuyRequestViewSet(viewsets.ModelViewSet):
     queryset = BuyRequest.objects.all()
     serializer_class = BuyRequestSerializer
     permission_classes = (BuyRequestPermissions, )
+
+    def pagination(self, queryset):
+        page = self.paginate_queryset(queryset=queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        owner_confirm = self.request.query_params.get('owner_confirm', None)
+        if owner_confirm is not None:
+            queryset = queryset.filter(owner_confirm=owner_confirm.capitalize())
+
+        return queryset
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
@@ -40,7 +58,6 @@ class BuyRequestViewSet(viewsets.ModelViewSet):
         try:
             buy_request = BuyRequest.objects.get(pk=pk)
             buy_request.owner_confirm = bool(request.data.get('status', False))
-            buy_request.save()
 
             if buy_request.owner_confirm \
                     and buy_request.buyer_confirm:
@@ -49,6 +66,7 @@ class BuyRequestViewSet(viewsets.ModelViewSet):
             else:
                 buy_request.contract = None
 
+            buy_request.save()
             serializer = BuyRequestSerializer(buy_request)
 
             return Response(serializer.data)
@@ -66,14 +84,19 @@ class BuyRequestViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+    @action(methods=['GET'], detail=True, serializer_class=FullBuyRequestSerializer)
+    def full(self, request, pk=None):
+        queryset = self.get_object()
+        serializer = self.get_serializer(queryset)
+        return Response(serializer.data)
+
     @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated])
     def get_owner_requests(self, request):
         user = request.user
         queryset = self.get_queryset().filter(product__housing__owner=user)
         if queryset.count() == 0:
-            return Response({'message': 'У вас заявок на покупку'}, status=404)
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+            return Response({'message': 'У вас нет заявок на покупку'}, status=404)
+        return self.pagination(queryset=queryset)
 
 
 

@@ -49,6 +49,8 @@ class PublishedHousingViewSet(viewsets.ModelViewSet):
         if district is not None and district != '':
             queryset = queryset.filter(housing__district=district)
 
+        queryset = queryset.order_by('-pk')
+
         return queryset
 
     @action(methods=['get'], detail=False, permission_classes=[AllowAny])

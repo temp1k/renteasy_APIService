@@ -16,7 +16,7 @@ from main.views import (
 )
 
 router = routers.DefaultRouter()
-router.register(r'city', city_view.CityViewSet)
+router.register(r'cities', city_view.CityViewSet)
 router.register(r'districts', district_view.DistrictViewSet)
 router.register(r'categories', category_view.CategoryViewSet)
 router.register(r'housings', housing_view.HousingViewSet)
